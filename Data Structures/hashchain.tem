@@ -1,0 +1,161 @@
+/*
+Ryan
+Hash Chain Class Implementations
+*/
+
+// Headers
+#include <iostream>
+#include <sstream>
+#include <cassert>
+#include <cstdlib>
+
+// Member Constats
+template<class Type>
+const std::size_t HashChain<Type>::CAPACITY; 
+
+// Operator Overloads
+template<class Type>
+void HashChain<Type>::operator=(const HashChain &rhs) {
+    if(this != &rhs)
+        copyHashChain(rhs);
+	return;
+} 
+
+// Modification Member Functions
+template<class Type>
+void HashChain<Type>::insertRecord(const std::size_t key, const Type &entry) {
+    if(!is_empty_chain(hash(key))) {
+        ++collision;
+        //std::cout << "\nCollison at Key: " << key;
+
+        for(std::size_t i = 0; i < usedKeyIndex; ++i)
+            if(usedKeys[i] == key)
+                std::cout << "\nDuplicate Key: " << key;
+
+        usedKeys[usedKeyIndex] = key;
+        ++usedKeyIndex;
+    }
+
+    if(!data[hash(key)].contains(entry)) {
+        data[hash(key)].insert(entry);
+        ++used;
+    }
+}
+
+template<class Type>
+void HashChain<Type>::removeRecord(const std::size_t key, Type &target) {
+    data[hash(key)].remove(target);
+    --used;
+}
+
+// Constant Member Functions
+template<class Type>
+bool HashChain<Type>::find(const std::size_t key, const Type &target, Type &grab) const {
+    Type result = data[hash(key)].grab(target);
+
+	if(result == Type())
+		return false;
+	else {
+        grab = result;
+		return true;
+     }
+}
+
+// Check Indexes Left
+template<class Type>
+unsigned HashChain<Type>::checkIndexLeft() const {
+    unsigned count = 0;
+    for(std::size_t i = 0; i < CAPACITY; ++i)
+        if(is_empty_chain(i))
+            ++count;
+    return count;
+}
+
+template<class Type>
+unsigned HashChain<Type>::checkIndexUsed() const {
+    unsigned count = 0;
+    for(std::size_t i = 0; i < CAPACITY; ++i)
+        if(!is_empty_chain(i))
+            ++count;
+    return count;     
+} 
+
+// Other Member Functions
+template<class Type>
+void HashChain<Type>::printChain(std::size_t index) const {
+    if(!is_empty_chain(index)) {
+        data[index].display();
+        std::cout << "\nEnd Chain\n\n\n\n"; 
+    }
+}
+
+template<class Type>
+void HashChain<Type>::printHashChain() const {
+    if(!is_empty_hashchain())
+        for(std::size_t i = 0; i < CAPACITY; ++i)
+            printChain(i);
+}
+
+// Private Member Constants
+template<class Type>
+const size_t HashChain<Type>::BASE;  
+
+// Helper Functions
+template<class Type>
+inline std::size_t HashChain<Type>::hash(const std::size_t key) const { 
+	return(radix_trans(key, BASE) % CAPACITY); // Radix Transform
+}   
+
+template<class Type>
+std::size_t HashChain<Type>::radix_trans(std::size_t key, const unsigned base) const {
+    std::size_t i = 0, newKey = 0;
+    std::stringstream ss;
+    std::string str;
+
+    while(key != 0) {
+        i = key % base;
+        key /= base;
+        ss << i;
+    }
+
+    ss >> str;
+    str = std::string(str.rbegin(), str.rend());
+    ss.clear();
+    ss << str;
+    ss >> newKey;
+
+    return newKey;
+}
+
+template<class Type>
+void HashChain<Type>::copyChain(const std::size_t index, const HashChain &rhs) {
+	if(!is_empty_chain(index))
+		freeChain(index);
+	    
+    data[index] = rhs.data[index];
+}
+
+template<class Type>
+void HashChain<Type>::copyHashChain(const HashChain &rhs) {
+    if(!is_empty_hashchain())
+        free();  
+    
+    for(std::size_t i = 0; i < CAPACITY; ++i)
+        copyChain(i, rhs);
+
+    used = rhs.used;
+    collision = rhs.collision; 
+}
+      
+template<class Type> 
+void HashChain<Type>::freeChain(const std::size_t index) { data[index] = Set<Type>(); }
+
+template<class Type>
+void HashChain<Type>::free() {
+    for(std::size_t i = 0; i < CAPACITY; ++i)
+        freeChain(i);
+    
+    used = 0;
+    used = usedKeyIndex = collision = 0;
+}
+

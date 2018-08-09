@@ -1,0 +1,224 @@
+/********************************************************************************************************
+ * Ryan Lockman                                                                                         *
+ * set.tem                                                                                              *
+ * Description: Set template class implementations.                                                     *
+ * 5/7/14                                                                                               *
+ ********************************************************************************************************/
+
+// Headers
+#include <iostream>
+#include <iterator>
+#include <algorithm>
+
+// Constructors
+template<class T> template<typename InputIterator>
+Set<T>::Set(InputIterator b, InputIterator e) : head(nullptr), used(0) {
+    for(; b != e; insert(*b++));
+}
+	
+// Modification Member Functions
+template<class T>
+void Set<T>::insert(const T &entry) {
+	if(!listSearch(head, entry)) {   // if nullptr
+		listHeadInsert(head, entry); // dynamic
+		++used;
+	}
+}
+
+template<class T> template<typename Iterator> 
+void Set<T>::insert_range(Iterator b, Iterator e) {
+    for(; b != e; insert(*b++));   
+}
+
+
+template<class T>
+void Set<T>::erase(const T &target) {
+	Node<T> *targetNode = listSearch(head, target);
+	
+    // Loop Set and Remove All Targets
+	while(targetNode) { // not nullptr
+		targetNode->setData(head->getData());
+		targetNode = targetNode->getLink();
+		targetNode = listSearch(targetNode, target);
+		listHeadRemove(head);
+		--used;
+	}
+}
+
+template<class T>
+void Set<T>::clear() {
+	listClear(head);
+	head = nullptr;
+	used = 0;
+}
+
+// Constant Member Functions
+template<class T>
+bool Set<T>::contains(const T &target) const {
+	if(listSearch(head, target))
+		return true;
+
+	return false;
+}
+
+template<class T>
+T* Set<T>::grab() const {
+	if(empty)
+        return nullptr;
+
+    // Randomly Select Element
+	std::size_t pos = (std::rand() % size()) + 1;
+	const Node<T>* const cursor = listLocate(head, pos);
+	
+    if(!cursor)
+        return nullptr;
+
+	return cursor->getData();
+}
+
+// Other Member Functions
+template<class T>
+void Set<T>::display() const {
+    std::size_t c = 0;
+
+    for(T i : *this) // range based loop(c++11)
+		if(++c == this->size())
+			std::cout << i;
+		else
+			std::cout << i << ", ";
+}
+
+// Friend Overloads
+template<typename T>
+std::ostream& operator<<(std::ostream& os, const Set<T> &rhs) {
+    std::size_t c = 0;
+
+    std::for_each(std::begin(rhs), std::end(rhs), [&os, &rhs, &c](T i) { // lambda(c++11)
+        if(++c == rhs.size())
+            os << i;
+        else
+            os << i << ", "; 
+    });
+
+    return os;
+}
+	
+// Helper Member Functions
+template<class T>
+void Set<T>::copySet(const self_type &rhs) {
+	Node<T> *tail = nullptr;
+	
+	if(!empty())
+		clear();
+		
+	listCopy(rhs.head, head, tail);
+	used = rhs.used;
+}
+
+// Non-Member Functions
+template<class set_T>
+void setUnion(const set_T &s1, const set_T &s2, set_T &result) {
+	if(&s1 == &s2)
+        return;
+	
+    auto b = s1.cbegin(), e = s1.cend(); // auto(c++11)
+
+    // Insert All from s1
+	for(; b != e; ++b)
+		result.insert(*b);
+
+    // Insert All from s2
+	for(b = s2.begin(), e = s2.end(); b != e; ++b)
+		result.insert(*b);
+}
+
+template<class set_T>
+void setIntersection(const set_T &s1, const set_T &s2, set_T &result) {
+	auto b = s1.cbegin(), e = s1.cend();
+	
+    // Insert if in Both s1 and s2
+	for(; b != e; ++b)
+		if(s2.contains(*b)) // found
+			result.insert(*b);
+}
+
+template<class set_T>
+void setDifference(const set_T &s1, const set_T &s2, set_T &result) {
+	if(&s1 == &s2)
+        return; 
+	
+    auto b = s1.cbegin(), e = s1.cend();
+	
+    // Insert if Not in s2
+	for(; b != e; ++b)
+		if(!s2.contains(*b))           // not found
+			result.insert(*b);
+}
+
+template <class set_T>
+void setSymmetricDiff(const set_T &s1, const set_T &s2, set_T &result) {
+	if(&s1 == &s2)
+        return;
+    
+    auto b = s1.cbegin(), e = s1.cend();
+
+    // Insert if Not in s2
+	for(; b != e; ++b)
+		if(!s2.contains(*b))           // not found
+			result.insert(*b);
+	
+    // Insert if Not in s1
+    for(b = s2.cbegin(), e = s2.cend(); b != e; ++b)
+		if(!s1.contains(*b))           // not found
+			result.insert(*b);
+}
+
+// Union
+template<class set_T>
+set_T operator|(const set_T &lhs, const set_T &rhs) {
+	set_T result; 
+    setUnion(lhs, rhs, result);
+    return result;
+}
+
+// Intersection
+template<class set_T>
+set_T operator&(const set_T &lhs, const set_T &rhs) {
+	set_T result;
+    setIntersection(lhs, rhs, result);
+	return result;
+}
+
+// Difference
+template<class set_T>
+set_T operator-(const set_T &lhs, const set_T &rhs) {
+	set_T result;
+    setDifference(lhs, rhs, result);
+	return result;
+}
+
+// Symmetric Difference
+template<class set_T>
+set_T operator^(const set_T &lhs, const set_T &rhs) {
+    set_T result;
+    setSymmetricDiff(lhs, rhs, result);
+    return result;
+}
+
+template<class set_T>
+bool operator==(const set_T &lhs, const set_T &rhs) {
+	auto b = lhs.cbegin(), e = lhs.cend();
+	
+    // Check Each Element From lhs in rhs
+	for(; b != e; ++b)
+		if(!rhs.contains(*b))              // not found
+			return false;
+	
+    // Check Each Element From rhs in lhs
+	for(b = rhs.cbegin(), e = rhs.cend(); b != e; ++b)
+		if(!lhs.contains(*b))              // not found
+			return false;
+ 
+	return true;
+}
+

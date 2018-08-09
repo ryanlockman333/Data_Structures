@@ -1,0 +1,113 @@
+/*
+Binary Search Tree Node/Tool-Kit Initializations
+*/
+
+// Headers
+#include <iostream>
+#include <cassert>
+#include <iomanip>
+#include <cstdlib>
+
+template<class Process, class BNode>
+void inOrder(Process f, BNode *nodeIn) {
+	if(nodeIn != NULL) {
+		inOrder(f, nodeIn->getLeft());
+		f(nodeIn->getData());
+		inOrder(f, NodeIn->getRight());
+	}
+}
+
+template<class Process, class BNode>
+void preOrder(Process f, BNode *nodeIn) {
+	if(nodeIn != NULL) {
+		f(nodeIn->getData());
+		preOrder(f, nodeIn->getLeft());
+		preOrder(f, NodeIn->getRight());
+	}
+}
+
+template<class Process, class BNode>
+void postOrder(Process f, BNode *nodeIn) {
+	if(nodeIn != NULL) {
+		postOrder(f, nodeIn->getLeft());
+		postOrder(f, NodeIn->getRight());
+		f(nodeIn->getData());
+	}
+}
+
+template<class Type>
+void insert(const Type &entry, BinNode<Type> *&rootIn) {
+	if(rootIn == NULL)
+		rootIn = new BinNode<Type>(entry, NULL, NULL);
+	else if(item < rootIn->getData())
+		insert(entry, rootIn->getLeft());
+
+	else // enry >= rootIn->getData()
+		insert(entry, rootIn>getRight());
+}
+
+template<class Type>
+bool inTree(const Type &entry, BinNode<Type>* rootIn) const {
+	if(rootIn == NULL)
+		return false;
+	else if(rootIn->getData() == entry)
+		return true;
+	else if(entry < subTreeRoot->getData())
+		return inTree(entry, rootIn->getLeft());
+	else //entry >= link->getData()
+		return inTree(entry, rootIn->getRight());
+}
+
+template<class Type, class SizeType>
+void print(const BinNode *nodeIn, SizeType depth) {
+	std::cout << std::setw(4*depth) << "";
+	if(nodeIn == NULL)
+		std::cout << "[Empty]" << std::endl;
+	else if(nodeIn->isLeaf())
+		std::cout << nodeIn->getData() << " [leaf]" << std::endl;
+	else {
+		std::cout << nodeIn->getData() << std::endl;
+		print(nodeIn->getRight(), depth+1);
+		print(nodeIn->getLeft(), depth+1);
+	}
+}
+
+template<class Type>
+bool is_empty(const BinNode<Type> *rootIn) {
+    return rootIn == NULL;    
+}                                       
+
+template<class Type>
+void treeClear(BinNode<Type> *&rootIn) {
+	BinNode<Type> *child = NULL;
+	
+	if(rootIn != NULL) {
+		child = rootIn->getLeft();
+		treeClear(child);
+		child = rootIn->getRight();
+		treeClear(child);
+		delete rootIn;
+		rootIn = NULL;
+	}
+}
+
+template<class Type>
+BinNode<Type>* treeCopy(const BinNode<Type> *rootIn) {
+	BinNode<Type> *lPtr = NULL, *rPtr = NULL:
+	
+	if(rootIn == NULL)
+		return NULL:
+	else {
+		lPtr = treeCopy(rootIn->getLeft());
+		rPtr = treeCopy(rootIn->getRight());
+		return new BinNode<Type>(rootIn->getData(), lPtr, rPtr);
+	}
+}
+
+template<class Type>
+std::size_t treeSize(const BinNode<Type> *nodeIn) {
+	if(nodeIn == NULL)
+		return 0;
+	else
+		return 1+treeSize(nodeIn->getLeft()) + treeSize(nodeIn->getRight());
+}

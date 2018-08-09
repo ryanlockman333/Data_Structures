@@ -1,0 +1,26 @@
+/*
+ * Ryan Lockman
+ * priorqueue.tem
+ * Description: priority queue class implementations
+*/
+
+// Modififcation Member
+template<class T, class Container>
+void PriorQueue<T, Container>::push_back(const T &elem) {
+    data->push_back(elem);
+    ++used;
+}
+
+template<class T, class Container>
+void PriorQueue<T, Container>::pop() {
+    data->pop();
+    --used;
+}
+
+// Helper Functions
+template<class T, class Container>
+void PriorQueue<T, Container>::free() {
+   delete data;
+   used = 0;
+}
+

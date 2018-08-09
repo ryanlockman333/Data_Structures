@@ -1,0 +1,143 @@
+/*
+ * Ryan Lockman
+ * 101430670
+ * table.tem
+ * Descrition: Hash Table, Hasher Functor Implementations
+ * 3/18/14
+ *
+*/
+
+// Headers
+#include <iostream>
+
+// Hash Class Implementations
+
+// Member Functions
+inline std::size_t Hasher::hash(const std::string str) {
+    std::size_t hashVal = 0;
+
+    for(std::string::size_type i = 0; i < str.length(); ++i)
+	    hashVal += str[i];
+	
+    return hashVal;
+}
+
+// Table Class Implementations
+
+// Member Constats
+template<class T, class HashFunctor, std::size_t CAP>
+const std::size_t Table<T, HashFunctor, CAP>::CAPACITY;
+
+template<class T, class HashFunctor, std::size_t CAP>
+const std::string Table<T, HashFunctor, CAP>::NEVER_USED = "-1";
+
+template<class T, class HashFunctor, std::size_t CAP>
+const std::string Table<T, HashFunctor, CAP>::PREV_USED  = "-2";
+
+// Constructors
+template<class T, class HashFunctor, std::size_t CAP>
+Table<T, HashFunctor, CAP>::Table(ptrFuncMemb pfm) : buckets(), used(0), collision(0), myHash(pfm) {
+	for(std::size_t i = 0; i < CAP; ++i)
+		buckets[i].key = NEVER_USED;
+}
+
+template<class T, class HashFunctor, std::size_t CAP>
+void Table<T, HashFunctor, CAP>::push(const T &entry, const std::string str) {
+    // Check Overflow
+	if(size() == CAP-1)
+        throw HashException("Table Overflow Error");
+
+    // Find
+    std::size_t index = 0;
+	if(find_index(str, index)) {       
+        HashFunctor *hf = NULL;
+		index = (hf->*myHash)(str) % CAP;
+
+		while(!is_vacant(index)) {
+		    index = next_index(index);
+            ++collision;
+        }
+	}
+
+    // Push Actual Data
+    buckets[index].key = str;
+	buckets[index].data = entry;
+    ++used;   
+}
+
+template<class T, class HashFunctor, std::size_t CAP>
+void Table<T, HashFunctor, CAP>::pop(const std::string str) {
+	std::size_t index = 0;
+
+    // Check Underflow
+    if(is_empty())
+        throw HashException("Table Underflow Error");
+
+    // Find	
+	if(find_index(str, index)) {
+        buckets[index] = Bucket(); // reset
+		buckets[index].key = PREV_USED;
+		--used;
+	}
+}
+
+// Constant Member Functions
+template<class T, class HashFunctor, std::size_t CAP>
+bool Table<T, HashFunctor, CAP>::is_present(const std::string str) const {
+	return find_index(str, 0);
+}
+
+template<class T, class HashFunctor, std::size_t CAP>
+bool Table<T, HashFunctor, CAP>::find(const std::string str, T &result) const {
+	std::size_t index = 0;
+    if(find_index(str, index)) {
+		result = buckets[index].getData();
+        return true;
+    }
+    return false;
+}
+
+// Check Indexes Left
+template<class T, class HashFunctor, std::size_t CAP>
+unsigned Table<T, HashFunctor, CAP>::checkIndexLeft() const {
+    unsigned count = 0;
+    for(std::size_t i = 0; i < CAP; ++i)
+        if(is_vacant(i))
+            ++count;
+    return count;
+}
+
+template<class T, class HashFunctor, std::size_t CAP>
+unsigned Table<T, HashFunctor, CAP>::checkIndexUsed() const {
+    unsigned count = 0;
+    for(std::size_t i = 0; i < CAP; ++i)
+        if(!is_vacant(i))
+            ++count;
+    return count;     
+}
+
+// Helper Functions                                           
+template<class T, class HashFunctor, std::size_t CAP>
+inline std::size_t Table<T, HashFunctor, CAP>::next_index(const std::size_t index) const {
+    return (index+1) % CAP;
+}
+
+template<class T, class HashFunctor, std::size_t CAP>
+bool Table<T, HashFunctor, CAP>::find_index(const std::string str, std::size_t &index) const {
+	std::size_t count = 0;
+    HashFunctor *hf = NULL;
+
+	index = (hf->*myHash)(str) % CAP;
+
+	while(count++ < CAP && !never_used(index) && buckets[index].getKey() != str)
+		index = next_index(index);
+
+	return buckets[index].getKey() == str;
+}
+
+template<class T, class HashFunctor, std::size_t CAP>
+void Table<T, HashFunctor, CAP>::display() const {
+	for(std::size_t i = 0; i < CAP; ++i)
+        std::cout << "\ntable[" << i << "]: " << buckets[i].getKey();     
+}
+

@@ -1,0 +1,73 @@
+/*
+Binary Search Tree Node/Tool-Kit Prototypes
+*/
+
+#ifndef BINNODE_H
+#define BINNODE_H
+
+template <class Type> class BinNode {
+public:
+	// Typedefs
+	typedef Type value_type;
+	
+	// Constructors
+	BinNode(const Type &dataIn = Type(), BinNode *leftIn = 0, BinNode *rightIn = 0)
+		: data(dataIn), left(leftIn), right(rightIn) {}
+	
+	// Modification Member Functions
+	Type& getData() { return data; }
+	BinNode*& getLeft() { return left; }
+	BineNode*& getRight() { return right; }
+	void setData(const Type &dataIn) { data = dataIn; }
+	void setLeft(BinNode *leftIn) { left = leftIn; }
+	void sertRight(BinNode *rightIn) { right = rightIn; }
+
+	// Const Member Functions
+	const Type& getData() const { return data; }
+	const BinNode* getLeft() const { return left; }
+	const BinNode* getRight() const { return right; }
+	bool  isLeaf() const { return (left == 0) && (right == 0); }
+
+private:
+	// Data Members
+	Type data;
+	BinNode *left, *right;
+};
+
+// Binary Tree Tool-Kit
+template<class Process, class BNode>
+void inOrder(Proces f, BNode *nodeIn);
+
+template<class Process, class BNode>
+void preOrder(Process f, BNode *nodeIn);
+
+template<class Process, class BNode>
+void postOrder(Process f, BNode *nodeIn);
+
+template<class Type>
+void insert(const Type &entry, BinNode<Type> *&rootIn);
+
+// delete
+// leaf number
+// height
+
+template<class Type>
+bool inTree(const Type &entry, BinNode<Type>* rootIn) const;
+
+template<class Type, class SizeType>
+void print(const BinNode<Type> *nodeIn, SizeType depth);
+
+template<class Type>
+bool is_empty(const BinNode<Type> *rootIn);
+
+template<class Type>
+void treeClear(BinNode<Type> *&rootIn);
+
+template<class Type>
+BinNode<Type>* treeCopy(const BinNode<Type> *rootIn);
+
+template<class Type>
+std::size_t treeSize(const BinNode<Type> *nodeIn);
+
+#include "BinNode.tem"
+#endif

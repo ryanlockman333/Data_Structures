@@ -1,0 +1,16 @@
+/*
+ * Ryan Lockman: 101430670
+ * priornode.cpp
+ * Description: Priority Queue Node class implementations.
+*/
+
+// Headers
+#include <iostream>
+
+// Stream Operators
+template<typename U>
+std::ostream& operator<<(std::ostream &os, const Node<U> &rhs) {
+    os << "Node: " << rhs.getU() << " >> " << rhs.getV() << " W:" << rhs.getWeight() << std::endl;
+    return os;
+}
+

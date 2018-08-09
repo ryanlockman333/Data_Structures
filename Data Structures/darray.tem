@@ -1,0 +1,102 @@
+// Implementation of a darray template
+
+#include <cassert>
+
+template <typename T>
+darray<T>::darray():used(0),cap(0),arr(0)
+{ }
+
+template <typename T>
+darray<T>::darray(const darray<T>& d):cap(d.cap),used(d.used),arr(0)
+{
+    arr=new T[cap];
+    for(unsigned i=0; i<used; ++i)
+	arr[i] = d.arr[i];
+}
+
+template <typename T>
+darray<T>::darray(typename darray<T>::size_type n):used(n),cap(n),arr(0)
+{
+    arr=new T[cap];
+    for(unsigned i=0; i<cap; ++i)
+	arr[i] = T();
+}
+
+template <typename T>
+darray<T>::~darray()
+{
+    delete [ ] arr;
+    arr=0;
+    used=cap=0;
+}
+
+template <typename T>
+typename darray<T>::size_type darray<T>::size() const
+{
+    return used;
+}
+
+template <typename T>
+const T& darray<T>::operator [ ] (typename darray<T>::size_type idx) const
+{
+    assert(idx<used);
+    return arr[idx];
+}
+
+template <typename T>
+T& darray<T>::operator [ ] (typename darray<T>::size_type idx)
+{
+    assert(idx<used);
+    return arr[idx];
+}
+
+template <typename T>
+void darray<T>::pop_back()
+{
+    assert(used>0);
+    --used;
+}
+
+template <typename T>
+void darray<T>::push_back(const T& val)
+{
+    // No size of capacity
+    if(used==cap && used==0)
+    {
+	cap=1;
+	arr=new T[1];
+	arr[0]=val;
+	used=1;
+    }
+
+    // used < cap
+    else if(used<cap)
+    {
+	arr[used]=val;
+	++used;
+    }
+
+    // used==cap != 0
+    else
+    {
+	cap=2*cap;
+	T* temp = new T[cap];
+	int i;
+	for(i=0; i<used; ++i)
+	    temp[i] = arr[i];
+	temp[i]=val;
+	delete [ ] arr;
+	arr=temp;
+	++used;
+    }
+}
+
+template <typename T>
+std::ostream& operator << (std::ostream& out, const darray<T>& d)
+{
+    out << '(';
+    int i;
+    for(i=0; i<d.used-1; ++i)
+	out << d.arr[i] << ' ';
+    return out << d.arr[i] << ')';
+}

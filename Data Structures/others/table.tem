@@ -1,0 +1,175 @@
+/*
+ * Ryan Lockman
+ * 101430670
+ * table.tem
+ * Descrition: Hash Table Implementations
+*/
+
+// Headers
+#include <iostream>
+#include <sstream>
+
+// Hash Class Implementations
+
+// Member Constants
+const int Hasher::BASE;
+
+// Member Functions
+inline std::size_t Hasher::hash(const int key, const std::size_t size) { 
+	return(radix_trans(key) % size);
+}
+
+int Hasher::radix_trans(const int key) {
+    std::size_t i = 0;
+    int oldkey = key, newKey = 0;
+    std::stringstream ss;
+    std::string str;
+
+    while(oldkey != 0) {
+        i = oldkey % BASE;
+        oldkey /= BASE;
+        ss << i;
+    }
+
+    ss >> str;
+    str = std::string(str.rbegin(), str.rend());
+    ss.clear();
+    ss << str;
+    ss >> newKey;
+
+    return newKey;
+}
+
+
+// Table Class Implementations
+
+// Member Constats
+template<class T, class HashFunctor>
+const std::size_t Table<T, HashFunctor>::CAPACITY;
+
+template<class T, class HashFunctor>
+const int Table<T, HashFunctor>::NEVER_USED;
+
+template<class T, class HashFunctor>
+const int Table<T, HashFunctor>::PREV_USED;
+
+// Constructors
+template<class T, class HashFunctor>
+Table<T, HashFunctor>::Table(ptrFuncMemb pfm) : buckets(), used(0), collision(0), myHash(pfm) {
+	for(std::size_t i = 0; i < CAPACITY; ++i)
+		buckets[i].key = NEVER_USED;
+}
+
+template<class T, class HashFunctor>
+void Table<T, HashFunctor>::push(const T &entry, const int key) {
+	bool found = false;
+	std::size_t index = 0;
+
+    // Check Overflow
+	if(size() == CAPACITY-1)
+        throw std::overflow_error("can't insert into full table");
+
+    // Check Key Invalid Argumnet
+    if(key < 0) 
+        throw std::invalid_argument("key is < 0");
+
+    // Check Collisons
+	find_index(key, found, index);
+	if(found) {       
+        HashFunctor *hf = NULL;
+		index = (hf->*myHash)(key, CAPACITY);
+        std::size_t count = 1;
+
+		while(!is_vacant(index)) {
+		    index = next_index(index, count);
+            ++count;
+            ++collision;
+        }
+	}
+
+    // Push Actual Data
+    ++used;
+    buckets[index].key = key;
+	buckets[index].data = entry;
+}
+
+template<class T, class HashFunctor>
+void Table<T, HashFunctor>::pop(const int key) {
+	bool found = false;
+	std::size_t index = 0;
+
+    // Check Underflow
+    if(is_empty())
+        throw std::underflow_error("can't remove from empty table");
+
+	// Check Key Invalid Argument
+    if(key < 0) 
+        throw std::invalid_argument("key is < 0");
+
+    // Find
+	find_index(key, found, index);
+
+	if(found) {
+        buckets[index] = Bucket(); // reset
+		buckets[index].key = PREV_USED;
+		--used;
+	}
+}
+
+// Constant Member Functions
+template<class T, class HashFunctor>
+bool Table<T, HashFunctor>::is_present(const int key) const {
+	bool found = false;
+	std::size_t index = 0;
+
+	find_index(key, found, index);
+
+	return found;
+}
+
+template<class T, class HashFunctor>
+void Table<T, HashFunctor>::find(const int key, bool &found, T &result) const {
+	std::size_t index = 0;
+    
+    find_index(key, found, index);
+    
+    if(found)
+		result = buckets[index].data;
+}
+
+// Helper Functions                                           
+template<class T, class HashFunctor>
+inline std::size_t Table<T, HashFunctor>::next_index(const std::size_t index, const std::size_t count) const {
+    return((index+1) % CAPACITY);
+} 
+    
+
+template<class T, class HashFunctor>
+void Table<T, HashFunctor>::find_index(const int key, bool &found, std::size_t &index) const {
+	std::size_t count = 0;
+    HashFunctor *hf = NULL;
+
+	index = (hf->*myHash)(key, CAPACITY);
+
+	while(count++ < CAPACITY && !never_used(index) && buckets[index].key != key)
+		index = next_index(index, count);
+
+	found = (buckets[index].key == key);
+}
+
+template<class T, class HashFunctor>
+bool Table<T, HashFunctor>::never_used(const std::size_t index) const {
+	return(buckets[index].key == NEVER_USED);
+}
+
+template<class T, class HashFunctor>
+bool Table<T, HashFunctor>::is_vacant(const std::size_t index) const {
+	return(buckets[index].key == PREV_USED || never_used(index));
+}
+
+template<class T, class HashFunctor>
+void Table<T, HashFunctor>::print() const {
+	for(std::size_t i = 0; i < CAPACITY; ++i)
+        std::cout << "\nbuckets[" << i << "]: " << buckets[i].key;     
+}
+

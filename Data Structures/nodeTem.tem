@@ -1,0 +1,98 @@
+/********************************************************************************************************
+ * Ryan Lockman                                                                                         *
+ * nodeTem.tem                                                                                            *
+ * Description: nodeTem class implementations and linked-list toolkit implementations.                  *
+ * 5/7/14                                                                                               *
+ ********************************************************************************************************/
+
+// Headers
+#include <cstdlib>
+
+// Linked-List Toolkit Functions
+template<class T>
+size_t listLength(const Node<T> *headIn) {
+	std::size_t answer = 0;
+	
+	for(Node<T> *cursor = headIn; cursor; cursor = cursor->getLink())
+		++answer;
+		
+	return answer;
+}
+
+template<class T>
+void listHeadInsert(Node<T> *&headIn, const T &entry) {
+	headIn = new Node<T>(entry, headIn);
+}
+
+template<class T>
+void listInsert(Node<T> *previous, const T &entry) {
+	previous->setLink(new Node<T>(entry, previous->getLink()));
+}
+
+template<class NodePtr, class T>
+NodePtr listSearch(NodePtr headIn, const T &target) {
+	for(NodePtr cursor = headIn; cursor; cursor = cursor->getLink())
+		if(target == cursor->getData())
+			return cursor;
+
+	return nullptr;
+}
+
+template<class NodePtr, class SizeT>
+NodePtr listLocate(NodePtr headIn, SizeT pos) {
+	NodePtr cursor = headIn;
+	
+    if(pos <= 0)
+        return nullptr;
+
+	for(unsigned i = 1; i < pos && cursor; ++i)
+		cursor = cursor->getLink();
+		
+	return cursor;
+}
+
+template<class T>
+void listHeadRemove(Node<T> *&headIn) {
+	Node<T> *remove = headIn;
+	
+	headIn = headIn->getLink();
+	delete remove;
+}
+
+template<class T>
+void listRemove(Node<T> *previous) {
+	Node<T> *remove = previous->getLink();
+	
+	previous->setLink(remove->getLink());
+	delete remove;
+}
+
+template<class T>
+bool is_empty(const Node<T> *headIn) {
+	return headIn == nullptr;
+}
+
+template<class T>
+void listClear(Node<T> *&headIn) {
+	for(; headIn; listHeadRemove(headIn));
+}
+
+template<class T>
+void listCopy(const Node<T> *source, Node<T> *&headIn, Node<T> *&tailIn) {
+	headIn = nullptr;
+	tailIn = nullptr;
+	
+	if(!source)
+		return;
+		
+	listHeadInsert(headIn, source->getData()); // dynamic
+	tailIn = headIn;
+	
+	source = source->getLink();
+	while(source) {
+		listInsert(tailIn, source->getData()); // dynamic
+		tailIn = tailIn->getLink();
+		source = source->getLink();
+	}
+}
+

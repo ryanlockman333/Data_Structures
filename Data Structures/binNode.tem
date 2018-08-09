@@ -1,0 +1,181 @@
+/*
+Binary Search Tree Node/Tool-Kit Initializations
+*/
+
+// Headers
+#include <iostream>
+#include <cassert>
+#include <iomanip>
+#include <cstdlib>
+
+template<class Process, class BNode>
+void inOrder(Process f, BNode *nodeIn) {
+	if(nodeIn != NULL) {
+		inOrder(f, nodeIn->getLeft());
+		f(nodeIn->getData());
+		inOrder(f, nodeIn->getRight());
+	}
+}
+
+template<class Process, class BNode>
+void preOrder(Process f, BNode *nodeIn) {
+	if(nodeIn != NULL) {
+		f(nodeIn->getData());
+		preOrder(f, nodeIn->getLeft());
+		preOrder(f, nodeIn->getRight());
+	}
+}
+
+template<class Process, class BNode>
+void postOrder(Process f, BNode *nodeIn) {
+	if(nodeIn != NULL) {
+		postOrder(f, nodeIn->getLeft());
+		postOrder(f, nodeIn->getRight());
+		f(nodeIn->getData());
+	}
+}
+
+template<class Type>
+void insertTree(const Type &entry, BinNode<Type> *&rootIn) {
+	if(rootIn == NULL)
+		rootIn = new BinNode<Type>(entry, NULL, NULL);
+	else if(entry < rootIn->getData())
+		insertTree(entry, rootIn->getLeft());
+
+	else // enry >= rootIn->getData()
+		insertTree(entry, rootIn->getRight());
+}
+
+template<class Type>
+bool isLeaf(const BinNode<Type> *nodeIn) {
+    return(nodeIn->getLeft() == NULL && nodeIn->getRight() == NULL);    
+}
+
+template<class Type>
+unsigned leafCount(const BinNode<Type> *rootIn) {
+    unsigned count = 0;
+
+    if(is_empty(rootIn))
+        return 0;
+    else if(isLeaf(rootIn))
+        return 1;
+    
+    leafCount(rootIn->getLeft());
+    if(isLeaf(rootIn))
+        ++count;
+
+    leafCount(rootIn->getRight());
+    if(isLeaf(rootIn))
+        ++count;
+
+    return count;
+}
+
+template<class Type>
+BinNode<Type>* inTree(const Type &entry, BinNode<Type>* rootIn) {
+	if(rootIn == NULL)
+		return NULL;
+	else if(rootIn->getData() == entry)
+		return rootIn;
+	else if(entry < rootIn->getData())
+		return inTree(entry, rootIn->getLeft());
+	else //entry >= link->getData()
+		return inTree(entry, rootIn->getRight());
+}
+
+template<class Type, class SizeType>
+void printTree(const BinNode<Type> *nodeIn, SizeType depth) {
+	std::cout << std::setw(4*depth) << "";
+	if(nodeIn == NULL)
+		std::cout << "[Empty]" << std::endl;
+	else if(nodeIn->isLeaf())
+		std::cout << nodeIn->getData() << " [leaf]" << std::endl;
+	else {
+		std::cout << nodeIn->getData() << std::endl;
+		printTree(nodeIn->getRight(), depth+1);
+		printTree(nodeIn->getLeft(), depth+1);
+	}
+}
+
+template<class Type>
+bool is_empty(const BinNode<Type> *rootIn) {
+    return rootIn == NULL;    
+}                                       
+
+template<class Type>
+void treeClear(BinNode<Type> *&rootIn) {
+	BinNode<Type> *child = NULL;
+	
+	if(rootIn != NULL) {
+		child = rootIn->getLeft();
+		treeClear(child);
+		child = rootIn->getRight();
+		treeClear(child);
+		delete rootIn;
+		rootIn = NULL;
+	}
+}
+
+template<class Type>
+BinNode<Type>* treeCopy(const BinNode<Type> *rootIn) {
+	BinNode<Type> *lPtr = NULL, *rPtr = NULL;
+	
+	if(rootIn == NULL)
+		return NULL;
+	else {
+		lPtr = treeCopy(rootIn->getLeft());
+		rPtr = treeCopy(rootIn->getRight());
+		return new BinNode<Type>(rootIn->getData(), lPtr, rPtr);
+	}
+}
+
+template<class Type>
+std::size_t treeSize(const BinNode<Type> *nodeIn) {
+	if(nodeIn == NULL)
+		return 0;
+	else
+		return 1 + treeSize(nodeIn->getLeft()) + treeSize(nodeIn->getRight());
+}
+
+template<class Type>
+std::size_t treeMaxDepth(const BinNode<Type> *nodeIn) {
+    std::size_t depthLeft = 0, depthRight = 0;
+
+    if(nodeIn == NULL || isLeaf(nodeIn))
+        return 0;
+    else {
+        depthLeft  = 1 + treeMaxDepth(nodeIn->getLeft());
+        depthRight = 1 + treeMaxDepth(nodeIn->getRight());
+    }
+
+    return depthLeft > depthRight ? depthLeft : depthRight;
+}
+
+template<class Type>
+std::size_t treeMinDepth(const BinNode<Type> *nodeIn) {
+    std::size_t depthLeft = 0, depthRight = 0;
+
+    if(nodeIn == NULL || isLeaf(nodeIn))
+        return 0;
+    else {
+        depthLeft  = 1 + treeMinDepth(nodeIn->getLeft());
+        depthRight = 1 + treeMinDepth(nodeIn->getRight());
+    }
+
+    return depthLeft < depthRight ? depthLeft : depthRight;
+} 
+
+template<class Type>
+bool treeEqualDepth(const BinNode<Type> *nodeIn) {
+    std::size_t depthLeft = 0, depthRight = 0;
+
+    if(nodeIn == NULL || isLeaf(nodeIn))
+        return true;
+    else {
+        depthLeft  = 1 + treeEqualDepth(nodeIn->getLeft());
+        depthRight = 1 + treeEqualDepth(nodeIn->getRight());
+    }
+
+    return depthLeft == depthRight ? true : false;
+} 
+

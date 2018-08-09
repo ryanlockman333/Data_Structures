@@ -1,0 +1,91 @@
+/*
+Ryan Lockman: 101430670
+CSCI 2421:001 Fall 2013
+node.cpp
+Description: Node, Iterators, and Linked List Tool-Kit template class definitions.
+*/
+
+// Headers
+#include <cassert>
+#include <cstdlib>
+
+// Linked-List Toolkit Functions
+template<class Type>
+size_t listLength(const Node<Type> *headIn) {
+	std::size_t answer = 0;
+	
+	for(Node<Type> *cursor = headIn; cursor != NULL; cursor = cursor->getLink())
+		++answer;
+		
+	return answer;
+}
+
+template<class Type>
+void listHeadInsert(Node<Type> *&headIn, const Type &entry, const std::size_t keyIn) {
+	headIn = new Node<Type>(headIn, entry, keyIn);
+}
+
+template<class Type>
+void listInsert(Node<Type> *previous, const Type &entry, const std::size_t keyIn) {
+	previous->setLink(new Node<Type>(previous->getLink(), entry, keyIn));
+}
+
+template<class NodePtr, class Type>
+NodePtr listSearch(NodePtr headIn, const Type &target) {
+	for(NodePtr cursor = headIn; cursor != NULL; cursor = cursor->getLink())
+		if(target == cursor->getData())
+			return cursor;
+	return NULL;
+}
+
+template<class NodePtr, class SizeType>
+NodePtr listLocate(NodePtr headIn, SizeType pos) {
+	NodePtr cursor = headIn;
+	
+	assert(pos > 0);
+	for(int i = 1; (i < pos) && (cursor != NULL); ++i)
+		cursor = cursor->getLink();
+		
+	return cursor;
+}
+
+template<class Type>
+void listHeadRemove(Node<Type> *&headIn) {
+	Node<Type> *remove = headIn;
+	
+	headIn = headIn->getLink();
+	delete remove;
+}
+
+template<class Type>
+void listRemove(Node<Type> *previous) {
+	Node<Type> *remove = previous->getLink();
+	
+	previous->setLink(remove->getLink());
+	delete remove;
+}
+
+template<class Type>
+void listClear(Node<Type> *&headIn) {
+	while(headIn != NULL)
+		listHeadRemove(headIn);
+}
+
+template<class Type>
+void listCopy(const Node<Type> *source, Node<Type> *&headIn, Node<Type> *&tailIn) {
+	headIn = NULL;
+	tailIn = NULL;
+	
+	if(source == NULL)
+		return;
+		
+	listHeadInsert(headIn, source->getData(), source->getKey());
+	tailIn = headIn;
+	
+	source = source->getLink();
+	while(source != NULL) {
+		listInsert(tailIn, source->getData(), source->getKey());
+		tailIn = tailIn->getLink();
+		source = source->getLink();
+	}
+}

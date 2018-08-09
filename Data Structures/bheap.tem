@@ -1,0 +1,96 @@
+/* 
+ * Ryan Lockman
+ * bheap.tem
+ * Description: binary heap class implementations
+ *
+*/
+
+// Headers
+#include <iostream>
+
+// Modififcation Member
+template<class T>
+void Heap<T>::push_back(const T &elem) {
+    heap->push_back(elem);
+    heapifyUp(heap->size()-1);
+    ++used;
+}
+
+template<class T>
+T Heap<T>::pop() {
+    T min = heap->front();
+    heap->at(0) = heap->at(heap->size()-1);
+    heap->pop_back();
+    heapifyDown(0);
+    --used;
+
+    return min;
+}
+
+template<class T>
+void Heap<T>::heapifyUp(int index) {
+/*  // To Debug
+    std::cout << "index:  " << index << std::endl;
+    std::cout << "parent(index): " << parent(index) << "\n\n";
+*/
+
+    while(index > 0 && parent(index) >= 0 && heap->at(parent(index)) > heap->at(index)) {
+        T tmp = heap->at(parent(index));
+        heap->at(parent(index)) = heap->at(index);
+        heap->at(index) = tmp;
+        index = parent(index);
+    }
+}
+
+template<class T>
+void Heap<T>::heapifyDown(int index) {
+/*  // To Debug
+    std::cout << "index: " << index << std::endl;
+    std::cout << "left(index):   " << left(index) << std::endl;
+    std::cout << "right(index):  " << right(index) << "\n\n";
+*/
+    
+    int child = left(index);
+    if(child > 0 && right(index) > 0 && heap->at(child) > heap->at(right(index)))
+        child = right(index);
+    
+    if(child > 0 && heap->at(child) < heap->at(index)) {
+        T tmp = heap->at(index);
+        heap->at(index) = heap->at(child);
+        heap->at(child) = tmp;
+        heapifyDown(child);
+    }
+}
+
+template<class T>
+int Heap<T>::left(int parentIdx) {
+    int i = (parentIdx << 1) + 1; // 2 * parent + 1
+    return static_cast<size_type>(i) < heap->size() ? i : -1;
+}
+
+template<class T>
+int Heap<T>::right(int parentIdx) {
+    int i = (parentIdx << 1) + 2; // 2 * parent + 2
+    return static_cast<size_type>(i) < heap->size() ? i : -1;
+}
+
+template<class T>
+int Heap<T>::parent(int childIdx) {
+    int i = (childIdx-1) >> 1;
+    return childIdx != 0 ? i : -1;
+}
+
+template<class T>
+void Heap<T>::printHeap() const {
+    typename Vector::const_iterator *c_it = heap->begin();
+    for(; c_it != heap->end(); std::cout << *c_it++);
+    std::cout << std::endl;
+}
+
+// Helper Functions
+template<class T>
+void Heap<T>::free() {
+    delete heap;
+    used = 0;
+}
+

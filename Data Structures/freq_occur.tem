@@ -1,0 +1,128 @@
+/********************************************************************************************* 
+ * Ryan Lockman                                                                              *
+ * freq_occur.tem                                                                            *
+ * Description: Frequencey of Occurence class implementations.                               *
+ * 4/16/14                                                                                   *
+ *********************************************************************************************/
+
+// Headers
+#include <iostream>
+#include <fstream>
+#include <iterator>
+#include <sstream>
+#include <algorithm>
+#include <functional>
+#include <locale>
+#include <cctype>
+
+// Mutator Functions
+int Freq_Occur::fin_occur(const char* const path, const std::string ignoredChrs) {
+    // Open File
+    std::ifstream ifs(path);
+    if(!ifs)
+        return -1;
+ 
+    // Read File
+    std::string buf;
+    while(std::getline(ifs, buf, '\n')) {
+        // Convert Line to Lowercase
+        std::transform(buf.begin(), buf.end(), buf.begin(),
+                       std::bind2nd(std::ptr_fun(&std::tolower<char>), std::locale("")));
+       
+        // Set Initial Iterators
+        std::string::const_iterator b = ignoredChrs.begin(), e = ignoredChrs.end();
+
+        // Remove Punctuation/Symbols/Numbers      
+        for(; b != e; buf.erase(std::remove(buf.begin(), buf.end(), *b++), buf.end()));
+        
+        // Remove WhiteSpaces
+        buf.erase(std::remove_if(buf.begin(), buf.end(), isspace), buf.end());
+       
+        // Fill Map
+        std::istringstream iss(buf);      
+        for(std::istream_iterator<key_type> b(iss), e; b != e; ++b) {
+            const key_type chr = *b;
+            Map::iterator it = myMap.find(chr);
+
+            // If Found
+            if(it != myMap.end()) {
+                mapped_type count = it->second;
+                myMap.erase(chr);
+                myMap.insert(std::make_pair(chr, ++count));
+            }
+            else
+                myMap.insert(std::make_pair(chr, 1));
+        }
+    }
+
+    // Close File
+    ifs.close();
+
+    return 0;
+}
+
+int Freq_Occur::fout_occur(const char* const path) const {
+    // Open File
+    std::ofstream ofs(path);
+    if(!ofs)
+        return -1;
+
+    // Print and Close
+    print(ofs);
+    ofs.close();
+
+    return 0;
+}
+
+// Non-Mutator Functions
+template<typename OutStream> void Freq_Occur::print(OutStream &os) const {
+    // Initialize Copied Map with Iterators
+    Map copiedMap(myMap);
+    typename Map::const_iterator b = copiedMap.begin(), e = copiedMap.end();
+
+    // Print Letter Through M
+    for(; b != e; ++b)
+        if(b->first <= 'm')
+            os << std::left << b->first << std::string(lenHelper(b->second), ' ');
+        else
+            break;
+
+    os << std::endl;
+
+    // Print Occurence Through M
+    for(b = copiedMap.begin(); b != e; ++b)
+        if(b->first <= 'm') {
+            os << std::left << b->second << ' ';
+            const key_type chr = b->first;
+            copiedMap.erase(chr);
+        }
+        else
+            break;
+
+    os << "\n\n\n";
+
+    // Print Letter Through Z
+    for(b = copiedMap.begin(); b != e; ++b)
+        os << std::left << b->first << std::string(lenHelper(b->second), ' ');
+
+    os << std::endl;
+
+    // Print Occurence Through Z
+    for(b = copiedMap.begin(); b != e; ++b)
+        os << std::left << b->second << ' ';
+}
+
+// Helper Functions
+unsigned Freq_Occur::lenHelper(const unsigned x) const {
+    if(x >= 1000000000) return 10;
+    if(x >= 100000000) return 9;
+    if(x >= 10000000) return 8;
+    if(x >= 1000000) return 7;
+    if(x >= 100000) return 6;
+    if(x >= 10000) return 5;
+    if(x >= 1000) return 4;
+    if(x >= 100) return 3;
+    if(x >= 10) return 2;
+               return 1;
+}
+

@@ -1,0 +1,70 @@
+/*
+ * Ryan Lockman
+ * dijkstra.tem
+ * Description: djkstra class implementations
+ *
+*/
+
+// Headers
+#include <iostream>
+#include <limits>
+
+template<typename T, typename U>
+void Dijkstra<T, U>::calcDijkstra(const int source, const int dest) {
+    // Initialize Vectors
+    std::vector<U> dist(G.size());
+    std::vector<T> parent(G.size());
+
+    for(std::size_t i = 0; i < G.size(); ++i) {
+        dist[i] = std::numeric_limits<U>::max(); // for infinity
+        parent[i] = -1;
+    }
+
+    dist[source] = 0;
+    PQ.push_back(std::make_pair(source, dist[source]));
+    
+    // Dijkstra Algorithm
+    while(!PQ.empty()) {
+        T u = PQ.top().first;
+        if(u == dest)
+            break;
+
+        PQ.pop();
+        for(std::size_t i = 0; i < G[u].size(); ++i) {
+            T v = G[u][i].first;
+            U w = G[u][i].second;
+            if(dist[v] > dist[u] + w) {
+                dist[v] = dist[u] + w;
+                parent[v] = u;
+                PQ.push_back(std::make_pair(v, dist[v]));
+            }
+        }
+    }
+    
+    // Find Shortest Path
+    path.clear();
+    int p = dest;
+    path.push_back(dest);
+    while(p != source) {
+        p = parent[p];
+        path.push_back(p);
+    }
+
+    // Weighted Distance
+    totalWeight = dist[dest];
+}
+
+template<typename T, typename U>
+void Dijkstra<T, U>::printPath() const {
+    std::cout << "\nShortest path from " << *path.rbegin() << " to " << *path.begin() << " is: ";
+
+    typename std::vector<T>::const_reverse_iterator c_rit = path.rbegin();
+    for(; c_rit != path.rend(); ++c_rit)
+        if(c_rit == path.rend()-1)
+            std::cout << *c_rit;
+        else
+            std::cout << *c_rit << "->";   
+
+    std::cout << std::endl;
+}
+

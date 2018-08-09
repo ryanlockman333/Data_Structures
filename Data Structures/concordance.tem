@@ -1,0 +1,98 @@
+/********************************************************************************************* 
+ * Ryan Lockman                                                                              *
+ * Concordance.tem                                                                           *
+ * Description: Concordance class implementations.                                           *
+ * 4/16/14                                                                                   *
+ *********************************************************************************************/
+
+// Headers
+#include <iostream>
+#include <fstream>
+#include <iterator>
+#include <sstream>
+#include <algorithm>
+#include <functional>
+#include <locale>
+
+// Modification Members
+int Concordance::fin_concord(const char* const path) {
+    // Open File
+    std::ifstream ifs(path);
+    if(!ifs)
+        return -1;
+ 
+    // Declarations
+    std::string buf;
+    std::size_t line = 0;
+    std::string str  = "`1234567890-=~!@#$%^&*()_+[]\\{}|;\':\",./<>?";
+
+    // Read File
+    while(std::getline(ifs, buf, '\n')) {
+        ++line; // line count
+
+        // Convert Line to Lowercase
+        std::transform(buf.begin(), buf.end(), buf.begin(),
+                std::bind2nd(std::ptr_fun(&std::tolower<char>), std::locale("")));
+        
+        // Remove Punctuation/Symbols/Numbers      
+        for(std::string::const_iterator b = str.begin(); b != str.end(); 
+                buf.erase(std::remove(buf.begin(), buf.end(), *b++), buf.end()));
+        
+        // Fill Map
+        std::istringstream iss(buf);
+        for(std::istream_iterator<key_type> b(iss), e; b != e; myMap[*b++].push_front(line));
+    }
+
+    // Reverse FLists For Map
+    for(typename Map::iterator b = myMap.begin(); b != myMap.end(); ++b)
+        b->second.reverse();
+
+    // Close File
+    ifs.close();
+
+    return 0;
+}
+
+int Concordance::fout_concord(const char* const path) const {
+    // Open File
+    std::ofstream ofs(path);
+    if(!ofs)
+        return -1;
+
+    // Print and Close File
+    print(ofs);
+    ofs.close();
+
+    return 0;
+}
+
+// Constant Members
+template<typename OutStream> void Concordance::print(OutStream &os) const {
+    // Set Initial Iterators
+    typename Map::const_iterator b = myMap.begin(), e = myMap.end();
+
+    // Get Max Word Size
+    std::size_t maxWord = 0;
+    for(; b != e; ++b)
+        if(b->first.size() > maxWord)
+            maxWord = b->first.size();
+
+    // Set Width Max
+    std::string widthHeader;
+    for(std::size_t i = 0; i < maxWord-4; ++i)
+        widthHeader += " ";
+
+    // Print to Standard Out
+    os << std::left << "WORD" << widthHeader << std::string(2, ' ') << "LINES\n";
+    for(b = myMap.begin(); b != e; ++b) {
+        // Set Correct Word Width
+        std::string widthWord;
+        if(b->first.size() < maxWord)
+            for(std::size_t i = 0; i < maxWord - b->first.size(); ++i)
+                widthWord += " ";
+        
+        // Print
+        os << std::left << b->first << widthWord << std::string(2, ' ') << b->second << std::endl;
+    }
+}
+

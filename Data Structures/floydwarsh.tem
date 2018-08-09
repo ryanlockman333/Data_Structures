@@ -1,0 +1,46 @@
+/*
+ * Ryan Lockman
+ * floydwarsh.tem 
+ * Description: floydwarsh class implementations
+ *
+*/
+
+// Headers
+#include <iostream>
+#include <iomanip>
+#include <algorithm>
+
+template<typename T>
+FloydWarsh<T>::FloydWarsh(const unsigned size) : G(size, Vector(size, 99999))  { // default
+    // Initialize Diagonal 0's
+    for(std::size_t i = 0; i < sizeof(Graph); ++i)
+        G[i][i] = 0;     
+}
+
+template<typename T>
+void FloydWarsh<T>::calcFloydWarsh() {
+    // Floyd-Warshall Algorithm
+    for(std::size_t  k = 1; k < G.size(); ++k)
+        for(std::size_t i = 1; i < G.size(); ++i)
+            for(std::size_t j = 1; j < G.size(); ++j)
+                G[i][j] = std::min(G[i][j], G[i][k] + G[k][j]);
+}
+
+template<typename T>
+void FloydWarsh<T>::printFloydMatrix() const {
+    for(std::size_t i = 0; i < G.size()-1; ++i)
+        std::cout << std::setw(7) << static_cast<char>('A'+i);
+    std::cout << std::endl;
+
+    for(std::size_t i = 1; i < G.size(); ++i) {
+        std::cout << static_cast<char>(64+i);
+        for(std::size_t  j = 1; j < G.size(); ++j)
+            if(G[i][j] == 99999)
+                std::cout << std::setw(7) << "INF";
+            else
+                std::cout << std::setw(7) << G[i][j];
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
+}
+
