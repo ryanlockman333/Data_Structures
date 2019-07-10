@@ -2,6 +2,7 @@
  * Ryan Lockman                                                                              *
  * forward_list.h                                                                            *
  * Description: Forward_List Class prototypes.                                               *
+ * © 2014 Ryan D. Lockman All Rights Reserved                                                *
  * 4/16/14                                                                                   *
  *********************************************************************************************/
 
